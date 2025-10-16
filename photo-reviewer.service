@@ -1,0 +1,25 @@
+[Unit]
+Description=Photo Reviewer Web Application
+After=network.target
+
+[Service]
+Type=simple
+User=santosg
+Group=santosg
+WorkingDirectory=/home/santosg/photo-reviewer
+Environment="PATH=/home/santosg/.local/bin:/usr/local/bin:/usr/bin"
+ExecStart=/usr/bin/python3 -m gunicorn -w 4 -b 0.0.0.0:5500 app:app
+Restart=always
+RestartSec=10
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=photo-reviewer
+
+[Install]
+WantedBy=multi-user.target

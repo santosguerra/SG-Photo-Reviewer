@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Reviewer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header with tabs -->
+        <header class="header">
+            <div class="app-header">
+                <div class="tabs">
+                    <button class="tab" data-tab="config">Configuración</button>
+                    <button class="tab active" data-tab="reviewer" id="reviewer-tab">Navegar</button>
+                    <button class="tab" data-tab="help">Ayuda</button>
+                </div>
+                <div class="app-info">
+                    <span id="app-version">SG Photo Reviewer v1.0.6</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Config Tab -->
+        <div class="tab-content" id="config-tab">
+            <div class="config-container">
+                <section class="config-section">
+                    <h2>Puntos de Montaje</h2>
+                    <div id="mount-points-list"></div>
+                    <div class="input-group">
+                        <input type="text" id="new-mount-point" placeholder="/ruta/al/montaje">
+                        <button id="add-mount-point">Agregar</button>
+                    </div>
+                </section>
+
+                <section class="config-section">
+                    <h2>Carpeta de Destino</h2>
+                    <div class="input-group">
+                        <input type="text" id="destination-folder" placeholder="para-revision">
+                    </div>
+                </section>
+
+                <section class="config-section">
+                    <h2>Opciones de Eliminación</h2>
+                    <div class="checkbox-group">
+                        <label>
+                            <input type="checkbox" id="enable-delete-button">
+                            <span>Habilitar botón de eliminar</span>
+                        </label>
+                    </div>
+                    <p class="config-note">Permite eliminar archivos definitivamente. Por defecto solo activo en carpeta de revisión.</p>
+                </section>
+
+                <button id="save-config" class="btn-primary">Guardar Configuración</button>
+
+                <section class="config-section">
+                    <h2>Diagnóstico de Permisos</h2>
+                    <div id="permissions-diagnostic"></div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Reviewer Tab -->
+        <div class="tab-content active" id="reviewer-tab-content">
+            <div class="reviewer-container">
+                <!-- Panel Dual de Navegación -->
+                <div id="revisor-panel">
+                    <!-- Breadcrumb Bar -->
+                    <div class="breadcrumb-bar">
+                        <button id="back-btn" class="btn-back">← Atrás</button>
+                        <div id="breadcrumb-path"></div>
+                    </div>
+
+                    <!-- Panel de Subcarpetas -->
+                    <div id="folders-panel" class="panel-section">
+                        <div class="panel-header">
+                            <span>📁 SUBCARPETAS (<span id="folder-count">0</span>)</span>
+                            <button id="toggle-folders" class="btn-toggle">▼ Colapsar</button>
+                        </div>
+                        <div id="folders-grid" class="folders-grid"></div>
+                    </div>
+
+                    <!-- Panel de Fotos -->
+                    <div id="photos-panel" class="panel-section">
+                        <div class="panel-header">
+                            <span>📷 FOTOS (<span id="photo-count">0</span>)</span>
+                            <div class="photo-controls">
+                                <span id="marked-count">0 marcadas</span>
+                                <button id="toggle-view" class="btn-view">Vista: Grilla ▼</button>
+                                <button id="unmark-all" class="btn">Desmarcar todas</button>
+                                <button id="delete-jpgs" class="btn-warning" style="display: none;">Eliminar JPGs (mantener RAW)</button>
+                                <button id="move-photos" class="btn-primary" style="display: none;">Mover 0 fotos a revisión</button>
+                                <button id="restore-photos" class="btn-primary" style="display: none;">Restaurar 0 fotos</button>
+                                <button id="delete-photos" class="btn-danger" style="display: none;">Eliminar 0 fotos definitivamente</button>
+                            </div>
+                        </div>
+                        <div id="photos-grid" class="photos-grid"></div>
+                    </div>
+                </div>
+
+                <!-- Carousel View -->
+                <div class="carousel-view" id="carousel-view">
+                    <button class="carousel-close" id="carousel-close">✕ Cerrar</button>
+                    <button class="carousel-nav prev" id="carousel-prev">‹</button>
+                    <div class="carousel-content">
+                        <img id="carousel-image" src="" alt="Photo" style="display: none;">
+                        <video id="carousel-video" controls style="display: none;"></video>
+                        <div class="carousel-badges" id="carousel-badges"></div>
+                        <!-- Loading overlay for carousel -->
+                        <div id="carousel-loading-overlay" class="carousel-loading-overlay" style="display: none;">
+                            <div class="loading-content">
+                                <span>Cargando imagen</span>
+                                <span class="loading-dots">
+                                    <span>.</span><span>.</span><span>.</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-nav next" id="carousel-next">›</button>
+                    <div class="carousel-info">
+                        <span id="carousel-counter">Foto 0 de 0 - 0 marcadas</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Tab -->
+        <div class="tab-content" id="help-tab">
+            <div class="config-container">
+                <section class="config-section">
+                    <h2>¿Qué hace este programa?</h2>
+                    <p>Photo Reviewer te ayuda a organizar fotos de sesiones fotográficas identificando y descartando rápidamente imágenes borrosas, movidas o desenfocadas. Puedes revisar cientos de fotos en minutos y liberar espacio en tu servidor.</p>
+                </section>
+
+                <section class="config-section">
+                    <h2>¿Cómo funciona?</h2>
+                    <ol class="help-list">
+                        <li>Navega hasta la carpeta de tu sesión fotográfica</li>
+                        <li>Carga la sesión para ver todas las fotos</li>
+                        <li>Marca las fotos que quieres descartar (clic o tecla Espacio)</li>
+                        <li>Mueve las marcadas a la carpeta de revisión</li>
+                        <li>Entra a la carpeta de revisión para confirmar eliminación o restaurar</li>
+                    </ol>
+                </section>
+
+                <section class="config-section">
+                    <h2>Formatos RAW soportados</h2>
+                    <table class="help-table">
+                        <thead>
+                            <tr>
+                                <th>Marca</th>
+                                <th>Extensiones</th>
+                                <th>Modelos típicos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Canon</td>
+                                <td>.CR2, .CR3</td>
+                                <td>EOS R, 5D, 6D, etc</td>
+                            </tr>
+                            <tr>
+                                <td>Sony</td>
+                                <td>.ARW</td>
+                                <td>A7, A6000, etc</td>
+                            </tr>
+                            <tr>
+                                <td>Nikon</td>
+                                <td>.NEF</td>
+                                <td>D850, Z6, Z7, etc</td>
+                            </tr>
+                            <tr>
+                                <td>Pentax</td>
+                                <td>.PEF</td>
+                                <td>K-1, K-3, etc</td>
+                            </tr>
+                            <tr>
+                                <td>DJI</td>
+                                <td>.DNG</td>
+                                <td>Mavic, Phantom, etc</td>
+                            </tr>
+                            <tr>
+                                <td>Fuji</td>
+                                <td>.RAF</td>
+                                <td>X-T, X-Pro, etc</td>
+                            </tr>
+                            <tr>
+                                <td>Olympus</td>
+                                <td>.ORF</td>
+                                <td>OM-D, PEN, etc</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="config-section">
+                    <h2>Atajos de teclado</h2>
+                    <div class="keyboard-shortcuts">
+                        <h3>Vista Carrusel:</h3>
+                        <ul class="help-list">
+                            <li><kbd>←</kbd> <kbd>→</kbd> : Navegar entre fotos</li>
+                            <li><kbd>Espacio</kbd> : Marcar/desmarcar</li>
+                            <li><kbd>G</kbd> : Volver a grilla</li>
+                            <li><kbd>Esc</kbd> : Salir del revisor</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Loading indicator -->
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Toast notifications -->
+        <div id="toast" class="toast"></div>
+
+        <!-- Delete confirmation modal -->
+        <div id="delete-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h2>¿Eliminar definitivamente?</h2>
+                <p id="delete-modal-message">¿Eliminar definitivamente X archivos? Esta acción no se puede deshacer.</p>
+                <div class="input-group">
+                    <input type="text" id="delete-confirmation-input" placeholder='Escribe "ELIMINAR" para confirmar'>
+                </div>
+                <div class="modal-buttons">
+                    <button id="delete-cancel" class="btn">Cancelar</button>
+                    <button id="delete-confirm" class="btn-danger" disabled>Eliminar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete JPGs confirmation modal -->
+        <div id="delete-jpgs-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h2>¿Eliminar JPGs (mantener RAW)?</h2>
+                <p id="delete-jpgs-modal-message"></p>
+                <div class="modal-buttons">
+                    <button id="delete-jpgs-cancel" class="btn">Cancelar</button>
+                    <button id="delete-jpgs-confirm" class="btn-warning">Eliminar JPGs</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
