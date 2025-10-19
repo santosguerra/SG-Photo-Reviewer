@@ -1,8 +1,14 @@
 """
 SG Photo Reviewer - Backend
-Version 1.1.2 - 2025-10-19
+Version 1.1.3 - 2025-10-19
 
 Changelog:
+  v1.1.3: Correcciones críticas y optimización UI
+          - CRÍTICO: Fotos respetan orientación EXIF (ImageOps.exif_transpose)
+          - Filtro de carpetas de sistema (Windows/Linux/hidden)
+          - Desmarcar todas sin confirmación
+          - UI compacta: Header 50px, Breadcrumb 45px, Panel carpetas 180px max
+          - Todos los elementos más compactos (gaps, padding reducidos)
   v1.1.2: Actualización completa de documentación de ayuda
           - Tab de ayuda expandido con todas las features v1.1.0
           - 13 secciones de documentación profesional
@@ -26,7 +32,7 @@ Changelog:
 """
 
 from flask import Flask, render_template, jsonify, request, send_file
-from PIL import Image
+from PIL import Image, ImageOps
 import os
 import hashlib
 import io
@@ -41,6 +47,20 @@ app = Flask(__name__)
 RAW_EXTENSIONS = {'.cr2', '.cr3', '.arw', '.nef', '.pef', '.dng', '.raf', '.orf'}
 JPG_EXTENSIONS = {'.jpg', '.jpeg'}
 VIDEO_EXTENSIONS = {'.mp4', '.mov', '.mkv', '.avi', '.m4v'}
+
+# System folders to exclude from browsing
+EXCLUDED_FOLDERS = {
+    # Windows
+    'system volume information', '$recycle.bin', 'pagefile.sys', 'hiberfil.sys',
+    'config.msi', 'recovery', 'windows', 'program files', 'program files (x86)',
+    'programdata', 'perflogs',
+    # Linux
+    'proc', 'sys', 'dev', 'run', 'tmp', 'lost+found', '.trash', '.cache',
+    'boot', 'etc', 'lib', 'lib64', 'sbin', 'var',
+    # Development/hidden
+    '.git', '__pycache__', 'node_modules', '.vscode', '.idea', '.vs',
+    '.svn', '.hg', '.DS_Store'
+}
 
 # Cache for thumbnails
 THUMBNAIL_DIR = 'static/thumbnails'
@@ -90,6 +110,20 @@ def find_paired_jpg(raw_path):
                 return jpg_path
     return None
 
+def should_exclude_folder(folder_name):
+    """Check if folder should be excluded from browsing"""
+    folder_lower = folder_name.lower()
+
+    # Exclude hidden folders (starting with dot)
+    if folder_name.startswith('.'):
+        return True
+
+    # Exclude system folders (case-insensitive)
+    if folder_lower in EXCLUDED_FOLDERS:
+        return True
+
+    return False
+
 def get_camera_brand(filename):
     """Get camera brand from RAW file extension"""
     ext = os.path.splitext(filename)[1].lower()
@@ -134,6 +168,9 @@ def generate_video_thumbnail(video_path):
         # Convert to PIL Image
         img = Image.fromarray(frame_rgb)
 
+        # Apply EXIF orientation if present
+        img = ImageOps.exif_transpose(img) if img else img
+
         # Resize maintaining aspect ratio
         img.thumbnail(THUMBNAIL_SIZE, Image.Resampling.LANCZOS)
 
@@ -172,6 +209,9 @@ def generate_thumbnail(image_path):
                 return None
         else:
             img = Image.open(image_path)
+
+        # Apply EXIF orientation correction (fixes rotated photos)
+        img = ImageOps.exif_transpose(img) if img else img
 
         # Resize maintaining aspect ratio
         img.thumbnail(THUMBNAIL_SIZE, Image.Resampling.LANCZOS)
@@ -264,6 +304,10 @@ def browse():
         for entry in os.scandir(path):
             try:
                 if entry.is_dir():
+                    # Skip excluded system folders
+                    if should_exclude_folder(entry.name):
+                        continue
+
                     items.append({
                         'name': entry.name,
                         'path': entry.path,

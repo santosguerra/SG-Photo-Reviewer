@@ -95,7 +95,6 @@
                             <span>📷 FOTOS (<span id="photo-count">0</span>)</span>
                             <div class="photo-controls">
                                 <span id="marked-count">0 marcadas</span>
-                                <button id="toggle-view" class="btn-view">Vista: Grilla ▼</button>
                                 <button id="mark-all" class="btn">Seleccionar todas</button>
                                 <button id="unmark-all" class="btn">Desmarcar todas</button>
                                 <button id="delete-jpgs" class="btn-warning" style="display: none;">Eliminar JPGs (mantener RAW)</button>
@@ -116,6 +115,15 @@
                         <img id="carousel-image" src="" alt="Photo" style="display: none;">
                         <video id="carousel-video" controls style="display: none;"></video>
                         <div class="carousel-badges" id="carousel-badges"></div>
+                        <!-- Metadata panel -->
+                        <div class="carousel-metadata" id="carousel-metadata">
+                            <div class="metadata-item"><strong>Archivo:</strong> <span id="meta-filename">-</span></div>
+                            <div class="metadata-item"><strong>Tamaño:</strong> <span id="meta-filesize">-</span></div>
+                            <div class="metadata-item"><strong>Dimensiones:</strong> <span id="meta-dimensions">-</span></div>
+                            <div class="metadata-item"><strong>Fecha:</strong> <span id="meta-date">-</span></div>
+                            <div class="metadata-item"><strong>Cámara:</strong> <span id="meta-camera">-</span></div>
+                            <div class="metadata-item"><strong>Exposición:</strong> <span id="meta-exposure">-</span></div>
+                        </div>
                         <!-- Loading overlay for carousel -->
                         <div id="carousel-loading-overlay" class="carousel-loading-overlay" style="display: none;">
                             <div class="loading-content">

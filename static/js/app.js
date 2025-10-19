@@ -59,7 +59,6 @@ function setupEventListeners() {
     document.getElementById('toggle-folders').addEventListener('click', toggleFoldersPanel);
 
     // Reviewer events
-    document.getElementById('toggle-view').addEventListener('click', toggleView);
     document.getElementById('mark-all').addEventListener('click', markAll);
     document.getElementById('unmark-all').addEventListener('click', unmarkAll);
     document.getElementById('delete-jpgs').addEventListener('click', showDeleteJpgsModal);
@@ -710,6 +709,9 @@ function updateCarousel() {
             } else {
                 img.classList.remove('marked');
             }
+
+            // Update dimensions after image loads
+            document.getElementById('meta-dimensions').textContent = `${newImg.naturalWidth} × ${newImg.naturalHeight} px`;
         };
 
         newImg.onerror = () => {
@@ -728,7 +730,44 @@ function updateCarousel() {
     const badges = createBadges(photo);
     badgesContainer.appendChild(badges);
 
+    // Update metadata panel
+    updateCarouselMetadata(photo);
+
     updateCounters();
+}
+
+function updateCarouselMetadata(photo) {
+    // Filename
+    document.getElementById('meta-filename').textContent = photo.name || '-';
+
+    // File size
+    document.getElementById('meta-filesize').textContent = formatFileSize(photo.size || 0);
+
+    // Dimensions (will be set after image loads)
+    const img = document.getElementById('carousel-image');
+    if (photo.type !== 'video' && img.complete && img.naturalWidth) {
+        document.getElementById('meta-dimensions').textContent = `${img.naturalWidth} × ${img.naturalHeight} px`;
+    } else {
+        document.getElementById('meta-dimensions').textContent = '-';
+    }
+
+    // Date (if available from EXIF or file metadata)
+    document.getElementById('meta-date').textContent = photo.date || '-';
+
+    // Camera
+    const cameraInfo = photo.camera_brand ? `${photo.camera_brand}${photo.camera_model ? ' ' + photo.camera_model : ''}` : '-';
+    document.getElementById('meta-camera').textContent = cameraInfo;
+
+    // Exposure (ISO, aperture, shutter speed)
+    let exposureInfo = '-';
+    if (photo.iso || photo.aperture || photo.shutter_speed) {
+        const parts = [];
+        if (photo.iso) parts.push(`ISO ${photo.iso}`);
+        if (photo.aperture) parts.push(`f/${photo.aperture}`);
+        if (photo.shutter_speed) parts.push(`${photo.shutter_speed}s`);
+        exposureInfo = parts.join(' • ');
+    }
+    document.getElementById('meta-exposure').textContent = exposureInfo;
 }
 
 function preloadNextImage() {
@@ -807,17 +846,17 @@ function markAll() {
 function unmarkAll() {
     if (state.markedPhotos.size === 0) return;
 
-    if (confirm('¿Desmarcar todas las fotos?')) {
-        state.markedPhotos.clear();
+    // Remove confirmation - execute immediately
+    state.markedPhotos.clear();
 
-        if (state.currentView === 'grid') {
-            renderPhotos(state.photos);
-        } else {
-            updateCarousel();
-        }
-
-        updateCounters();
+    if (state.currentView === 'grid') {
+        renderPhotos(state.photos);
+    } else {
+        updateCarousel();
     }
+
+    updateCounters();
+    showToast('Todas las fotos desmarcadas', 'success');
 }
 
 // Move Photos
