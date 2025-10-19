@@ -18,6 +18,7 @@
                 </div>
                 <div class="app-info">
                     <span id="app-version">SG Photo Reviewer v1.0.6</span>
+                    <button id="shortcuts-btn" class="btn-shortcuts" title="Atajos de teclado">?</button>
                 </div>
             </div>
         </header>
@@ -69,6 +70,13 @@
                     <!-- Breadcrumb Bar -->
                     <div class="breadcrumb-bar">
                         <button id="back-btn" class="btn-back">← Atrás</button>
+                        <button id="history-back" class="btn-history" title="Retroceder en historial" disabled>◀</button>
+                        <button id="history-forward" class="btn-history" title="Avanzar en historial" disabled>▶</button>
+                        <button id="toggle-bookmark" class="btn-bookmark" title="Agregar/Quitar favorito">☆</button>
+                        <div class="bookmarks-dropdown" id="bookmarks-dropdown">
+                            <button class="btn-bookmarks-toggle" id="bookmarks-toggle">★ Favoritos <span id="bookmarks-count">(0)</span></button>
+                            <div class="bookmarks-list" id="bookmarks-list" style="display: none;"></div>
+                        </div>
                         <div id="breadcrumb-path"></div>
                     </div>
 
@@ -88,6 +96,7 @@
                             <div class="photo-controls">
                                 <span id="marked-count">0 marcadas</span>
                                 <button id="toggle-view" class="btn-view">Vista: Grilla ▼</button>
+                                <button id="mark-all" class="btn">Seleccionar todas</button>
                                 <button id="unmark-all" class="btn">Desmarcar todas</button>
                                 <button id="delete-jpgs" class="btn-warning" style="display: none;">Eliminar JPGs (mantener RAW)</button>
                                 <button id="move-photos" class="btn-primary" style="display: none;">Mover 0 fotos a revisión</button>
@@ -129,23 +138,53 @@
         <div class="tab-content" id="help-tab">
             <div class="config-container">
                 <section class="config-section">
-                    <h2>¿Qué hace este programa?</h2>
-                    <p>Photo Reviewer te ayuda a organizar fotos de sesiones fotográficas identificando y descartando rápidamente imágenes borrosas, movidas o desenfocadas. Puedes revisar cientos de fotos en minutos y liberar espacio en tu servidor.</p>
+                    <h2>🎯 ¿Qué hace este programa?</h2>
+                    <p>Photo Reviewer es una herramienta profesional para organizar sesiones fotográficas. Te ayuda a identificar y descartar rápidamente imágenes borrosas, movidas o desenfocadas. Puedes revisar cientos de fotos en minutos, liberar espacio en tu servidor y gestionar archivos RAW y JPG simultáneamente.</p>
                 </section>
 
                 <section class="config-section">
-                    <h2>¿Cómo funciona?</h2>
+                    <h2>🚀 ¿Cómo funciona?</h2>
                     <ol class="help-list">
-                        <li>Navega hasta la carpeta de tu sesión fotográfica</li>
-                        <li>Carga la sesión para ver todas las fotos</li>
-                        <li>Marca las fotos que quieres descartar (clic o tecla Espacio)</li>
+                        <li>Navega hasta la carpeta de tu sesión fotográfica usando el explorador</li>
+                        <li>Visualiza todas las fotos en modo grilla o carrusel</li>
+                        <li>Marca las fotos que quieres descartar (click, Espacio, o Shift+Click para rangos)</li>
+                        <li>Revisa el contador de espacio en disco de las fotos marcadas</li>
                         <li>Mueve las marcadas a la carpeta de revisión</li>
-                        <li>Entra a la carpeta de revisión para confirmar eliminación o restaurar</li>
+                        <li>Entra a la carpeta de revisión para confirmar eliminación definitiva o restaurar</li>
+                        <li>Las carpetas de revisión vacías se eliminan automáticamente</li>
                     </ol>
                 </section>
 
                 <section class="config-section">
-                    <h2>Formatos RAW soportados</h2>
+                    <h2>✨ Novedades v1.1.x</h2>
+                    <div class="help-features">
+                        <h3>Mejoras de Selección</h3>
+                        <ul class="help-list">
+                            <li><strong>Seleccionar todas:</strong> Marca todas las fotos visibles con un solo click</li>
+                            <li><strong>Selección por rango:</strong> Mantén Shift y haz click en dos fotos para marcar todo el rango entre ellas</li>
+                            <li><strong>Contador de espacio:</strong> Ve cuánto espacio liberarás (MB/GB) antes de eliminar</li>
+                        </ul>
+
+                        <h3>Navegación Mejorada</h3>
+                        <ul class="help-list">
+                            <li><strong>Historial de navegación (◀ ▶):</strong> Funciona como un navegador web, navega hacia atrás y adelante en tu historial</li>
+                            <li><strong>Favoritos (☆/★):</strong> Guarda tus carpetas favoritas para acceso rápido</li>
+                            <li><strong>Breadcrumb interactivo:</strong> Click en cualquier parte del path para navegar</li>
+                        </ul>
+
+                        <h3>Usabilidad</h3>
+                        <ul class="help-list">
+                            <li><strong>Modal de atajos:</strong> Presiona ? o H para ver todos los atajos de teclado disponibles</li>
+                            <li><strong>Eliminación simplificada:</strong> Ya no necesitas escribir "DELETE", solo confirma con un click</li>
+                            <li><strong>Limpieza automática:</strong> Las carpetas de revisión vacías se eliminan automáticamente</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section class="config-section">
+                    <h2>📁 Formatos soportados</h2>
+
+                    <h3>Imágenes RAW</h3>
                     <table class="help-table">
                         <thead>
                             <tr>
@@ -158,53 +197,199 @@
                             <tr>
                                 <td>Canon</td>
                                 <td>.CR2, .CR3</td>
-                                <td>EOS R, 5D, 6D, etc</td>
+                                <td>EOS R, 5D, 6D, 7D, 80D, etc</td>
                             </tr>
                             <tr>
                                 <td>Sony</td>
                                 <td>.ARW</td>
-                                <td>A7, A6000, etc</td>
+                                <td>A7, A7R, A6000, A6400, etc</td>
                             </tr>
                             <tr>
                                 <td>Nikon</td>
                                 <td>.NEF</td>
-                                <td>D850, Z6, Z7, etc</td>
+                                <td>D850, D750, Z6, Z7, Z9, etc</td>
                             </tr>
                             <tr>
                                 <td>Pentax</td>
                                 <td>.PEF</td>
-                                <td>K-1, K-3, etc</td>
+                                <td>K-1, K-3, K-70, etc</td>
                             </tr>
                             <tr>
                                 <td>DJI</td>
                                 <td>.DNG</td>
-                                <td>Mavic, Phantom, etc</td>
+                                <td>Mavic, Phantom, Inspire, etc</td>
                             </tr>
                             <tr>
-                                <td>Fuji</td>
+                                <td>Fujifilm</td>
                                 <td>.RAF</td>
-                                <td>X-T, X-Pro, etc</td>
+                                <td>X-T, X-Pro, X-H, GFX, etc</td>
                             </tr>
                             <tr>
                                 <td>Olympus</td>
                                 <td>.ORF</td>
-                                <td>OM-D, PEN, etc</td>
+                                <td>OM-D, PEN, E-M1, etc</td>
                             </tr>
                         </tbody>
                     </table>
+
+                    <h3>Videos</h3>
+                    <ul class="help-list">
+                        <li><strong>.MP4</strong> - MPEG-4 (más común)</li>
+                        <li><strong>.MOV</strong> - QuickTime (Apple, cámaras profesionales)</li>
+                        <li><strong>.MKV</strong> - Matroska (alta calidad)</li>
+                        <li><strong>.AVI</strong> - Audio Video Interleave</li>
+                        <li><strong>.M4V</strong> - MPEG-4 Video (iTunes)</li>
+                    </ul>
+
+                    <h3>Imágenes JPG</h3>
+                    <ul class="help-list">
+                        <li><strong>.JPG / .JPEG</strong> - Compatible con todos los archivos RAW</li>
+                    </ul>
                 </section>
 
                 <section class="config-section">
-                    <h2>Atajos de teclado</h2>
+                    <h2>⌨️ Atajos de teclado</h2>
+                    <p><em>Presiona <kbd>?</kbd> o <kbd>H</kbd> en cualquier momento para ver este panel de atajos</em></p>
+
                     <div class="keyboard-shortcuts">
-                        <h3>Vista Carrusel:</h3>
+                        <h3>Navegación General</h3>
                         <ul class="help-list">
-                            <li><kbd>←</kbd> <kbd>→</kbd> : Navegar entre fotos</li>
-                            <li><kbd>Espacio</kbd> : Marcar/desmarcar</li>
-                            <li><kbd>G</kbd> : Volver a grilla</li>
-                            <li><kbd>Esc</kbd> : Salir del revisor</li>
+                            <li><kbd>?</kbd> o <kbd>H</kbd> : Mostrar panel de atajos de teclado</li>
+                            <li><kbd>Esc</kbd> : Cerrar modales o salir del carrusel</li>
+                        </ul>
+
+                        <h3>Vista Carrusel</h3>
+                        <ul class="help-list">
+                            <li><kbd>←</kbd> <kbd>→</kbd> : Navegar entre fotos anterior/siguiente</li>
+                            <li><kbd>Espacio</kbd> : Marcar/desmarcar foto actual</li>
+                            <li><kbd>G</kbd> : Volver a vista grilla</li>
+                            <li><kbd>Esc</kbd> : Salir del carrusel</li>
+                        </ul>
+
+                        <h3>Selección de Fotos (Vista Grilla)</h3>
+                        <ul class="help-list">
+                            <li><kbd>Click</kbd> : Marcar/desmarcar foto individual</li>
+                            <li><kbd>Shift</kbd> + <kbd>Click</kbd> : Seleccionar rango de fotos</li>
+                            <li><strong>Botón "Seleccionar todas"</strong> : Marcar todas las fotos visibles</li>
+                            <li><strong>Botón "Desmarcar todas"</strong> : Desmarcar todas las fotos</li>
                         </ul>
                     </div>
+                </section>
+
+                <section class="config-section">
+                    <h2>🎨 Características principales</h2>
+
+                    <h3>Sistema de Navegación</h3>
+                    <ul class="help-list">
+                        <li><strong>Breadcrumb interactivo:</strong> Click en cualquier carpeta del path para navegar directamente</li>
+                        <li><strong>Botón "← Atrás":</strong> Sube un nivel en la jerarquía de carpetas</li>
+                        <li><strong>Historial (◀ ▶):</strong> Navega hacia atrás y adelante en tu historial de navegación</li>
+                        <li><strong>Panel de subcarpetas:</strong> Ve y navega las subcarpetas de la carpeta actual</li>
+                        <li><strong>Contador de carpetas y fotos:</strong> Información en tiempo real</li>
+                    </ul>
+
+                    <h3>Sistema de Favoritos</h3>
+                    <ul class="help-list">
+                        <li><strong>Botón ☆/★:</strong> Agrega o quita la carpeta actual de favoritos</li>
+                        <li><strong>Dropdown "★ Favoritos":</strong> Lista de todas tus carpetas favoritas</li>
+                        <li><strong>Navegación rápida:</strong> Click en cualquier favorito para ir directo</li>
+                        <li><strong>Eliminar favoritos:</strong> Botón × en cada favorito para quitarlo</li>
+                        <li><strong>Persistencia:</strong> Los favoritos se guardan automáticamente en tu navegador</li>
+                    </ul>
+
+                    <h3>Gestión de Archivos</h3>
+                    <ul class="help-list">
+                        <li><strong>Detección automática JPG+RAW:</strong> Identifica pares de archivos automáticamente</li>
+                        <li><strong>Badges visuales:</strong> JPG+RAW (verde), Solo JPG (naranja), Solo RAW (azul), VIDEO (morado)</li>
+                        <li><strong>Marca de cámara:</strong> Identifica Canon, Sony, Nikon, etc.</li>
+                        <li><strong>Contador de espacio:</strong> Muestra el tamaño total de archivos marcados (MB/GB)</li>
+                        <li><strong>Thumbnails optimizados:</strong> Carga rápida con lazy loading</li>
+                        <li><strong>Nombres de archivo:</strong> Visibles debajo de cada thumbnail</li>
+                    </ul>
+
+                    <h3>Operaciones de Archivos</h3>
+                    <ul class="help-list">
+                        <li><strong>Mover a revisión:</strong> Mueve JPG, RAW y videos juntos a carpeta de revisión</li>
+                        <li><strong>Restaurar:</strong> Devuelve archivos de carpeta de revisión a carpeta original</li>
+                        <li><strong>Eliminar JPGs (mantener RAW):</strong> Útil para ahorrar espacio manteniendo RAW</li>
+                        <li><strong>Eliminar definitivamente:</strong> Borra archivos permanentemente (solo en carpeta de revisión)</li>
+                        <li><strong>Limpieza automática:</strong> Carpetas de revisión vacías se eliminan automáticamente</li>
+                    </ul>
+
+                    <h3>Vistas y Visualización</h3>
+                    <ul class="help-list">
+                        <li><strong>Vista Grilla:</strong> Visualiza muchas fotos simultáneamente con thumbnails</li>
+                        <li><strong>Vista Carrusel:</strong> Visualiza fotos en tamaño completo una por una</li>
+                        <li><strong>Lazy loading:</strong> Carga progresiva de fotos para mejor rendimiento</li>
+                        <li><strong>Reproductor de video:</strong> Reproduce videos directamente en el carrusel</li>
+                        <li><strong>Panel colapsable:</strong> Oculta el panel de subcarpetas cuando no lo necesites</li>
+                    </ul>
+                </section>
+
+                <section class="config-section">
+                    <h2>💡 Tips y trucos</h2>
+                    <ul class="help-list">
+                        <li><strong>Shift+Click para rapidez:</strong> Marca tu primera foto mala, desplázate hasta la última mala de la secuencia y Shift+Click para marcar todo el rango</li>
+                        <li><strong>Usa favoritos:</strong> Guarda tus carpetas de trabajo frecuentes para acceso instantáneo</li>
+                        <li><strong>Revisa el espacio:</strong> Antes de eliminar, verifica cuánto espacio liberarás en el contador</li>
+                        <li><strong>Elimina JPGs primero:</strong> Si tienes RAW+JPG, elimina solo los JPGs para ahorrar espacio y mantener calidad</li>
+                        <li><strong>Carpeta de revisión como buffer:</strong> Mueve fotos a revisión para una segunda opinión antes de eliminar definitivamente</li>
+                        <li><strong>Historial de navegación:</strong> Usa ◀ ▶ para navegar entre carpetas que acabas de visitar</li>
+                        <li><strong>Atajos de teclado:</strong> Presiona ? para recordar todos los atajos disponibles</li>
+                    </ul>
+                </section>
+
+                <section class="config-section">
+                    <h2>⚠️ Advertencias importantes</h2>
+                    <ul class="help-list">
+                        <li><strong>Eliminación permanente:</strong> Los archivos eliminados NO van a la papelera de reciclaje</li>
+                        <li><strong>Carpeta de revisión:</strong> Usa siempre la carpeta de revisión antes de eliminar definitivamente</li>
+                        <li><strong>Backups:</strong> Mantén siempre backups de tus archivos originales en otro lugar</li>
+                        <li><strong>Permisos:</strong> Asegúrate de tener permisos de lectura/escritura en todas las carpetas</li>
+                        <li><strong>RAW+JPG pareados:</strong> Al eliminar, mover o restaurar, ambos archivos se procesan juntos</li>
+                    </ul>
+                </section>
+
+                <section class="config-section">
+                    <h2>📝 Changelog</h2>
+
+                    <h3>v1.1.2 (2025-10-19)</h3>
+                    <ul class="help-list">
+                        <li>Actualización completa de documentación de ayuda</li>
+                        <li>13 secciones de documentación profesional</li>
+                        <li>Tips, trucos y advertencias</li>
+                        <li>Changelog visible en pestaña de ayuda</li>
+                    </ul>
+
+                    <h3>v1.1.1 (2025-10-19)</h3>
+                    <ul class="help-list">
+                        <li>Corrección de sistema de versionado (+0.0.1 por cambio)</li>
+                    </ul>
+
+                    <h3>v1.1.0 (2025-10-19) - Mejoras significativas de UX/UI</h3>
+                    <h4>Correcciones</h4>
+                    <ul class="help-list">
+                        <li>Modal de eliminación simplificado (sin necesidad de escribir "DELETE")</li>
+                        <li>Agregado botón "Seleccionar todas" para marcar todas las fotos visibles</li>
+                        <li>Carpetas de revisión vacías se eliminan automáticamente</li>
+                    </ul>
+
+                    <h4>Nuevas características</h4>
+                    <ul class="help-list">
+                        <li>Selección por rango con Shift+Click</li>
+                        <li>Contador de espacio en disco (MB/GB) para fotos marcadas</li>
+                        <li>Modal de atajos de teclado (botón ? o tecla H)</li>
+                        <li>Historial de navegación con botones ◀ ▶ (como navegador web)</li>
+                        <li>Sistema de favoritos/bookmarks para carpetas frecuentes</li>
+                    </ul>
+
+                    <h3>v1.0.7 (2025-10-16) - Soporte de videos</h3>
+                    <ul class="help-list">
+                        <li>Agregado soporte completo para videos (MP4, MOV, MKV, AVI, M4V)</li>
+                        <li>Generación de thumbnails con OpenCV (primer frame)</li>
+                        <li>Endpoint /api/video para streaming</li>
+                        <li>Integrado en funciones move, restore, delete</li>
+                    </ul>
                 </section>
             </div>
         </div>
@@ -220,14 +405,11 @@
         <!-- Delete confirmation modal -->
         <div id="delete-modal" class="modal" style="display: none;">
             <div class="modal-content">
-                <h2>¿Eliminar definitivamente?</h2>
-                <p id="delete-modal-message">¿Eliminar definitivamente X archivos? Esta acción no se puede deshacer.</p>
-                <div class="input-group">
-                    <input type="text" id="delete-confirmation-input" placeholder='Escribe "ELIMINAR" para confirmar'>
-                </div>
+                <h2>⚠️ Eliminar archivos</h2>
+                <p id="delete-modal-message">Vas a eliminar X archivos PERMANENTEMENTE. Esta acción es IRRECUPERABLE.</p>
                 <div class="modal-buttons">
                     <button id="delete-cancel" class="btn">Cancelar</button>
-                    <button id="delete-confirm" class="btn-danger" disabled>Eliminar</button>
+                    <button id="delete-confirm" class="btn-danger">Eliminar definitivamente</button>
                 </div>
             </div>
         </div>
@@ -240,6 +422,62 @@
                 <div class="modal-buttons">
                     <button id="delete-jpgs-cancel" class="btn">Cancelar</button>
                     <button id="delete-jpgs-confirm" class="btn-warning">Eliminar JPGs</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keyboard shortcuts modal -->
+        <div id="shortcuts-modal" class="modal" style="display: none;">
+            <div class="modal-content shortcuts-modal-content">
+                <button class="shortcuts-close" id="shortcuts-close">×</button>
+                <h2>⌨️ Atajos de Teclado</h2>
+
+                <div class="shortcuts-section">
+                    <h3>Navegación</h3>
+                    <div class="shortcut-item">
+                        <kbd>←</kbd> <kbd>→</kbd>
+                        <span>Navegar entre carpetas / fotos en carrusel</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Esc</kbd>
+                        <span>Salir del carrusel / Cerrar modales</span>
+                    </div>
+                </div>
+
+                <div class="shortcuts-section">
+                    <h3>Vista Carrusel</h3>
+                    <div class="shortcut-item">
+                        <kbd>←</kbd> <kbd>→</kbd>
+                        <span>Foto anterior / siguiente</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Espacio</kbd>
+                        <span>Marcar / desmarcar foto actual</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>G</kbd>
+                        <span>Volver a vista grilla</span>
+                    </div>
+                </div>
+
+                <div class="shortcuts-section">
+                    <h3>Selección de Fotos</h3>
+                    <div class="shortcut-item">
+                        <kbd>Click</kbd>
+                        <span>Marcar / desmarcar foto</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Shift</kbd> + <kbd>Click</kbd>
+                        <span>Seleccionar rango de fotos</span>
+                    </div>
+                </div>
+
+                <div class="shortcuts-section">
+                    <h3>Ayuda</h3>
+                    <div class="shortcut-item">
+                        <kbd>?</kbd> o <kbd>H</kbd>
+                        <span>Mostrar este panel de atajos</span>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,9 +1,24 @@
 """
 SG Photo Reviewer - Backend
-Version 1.1.0 - 2025-10-16
+Version 1.1.2 - 2025-10-19
 
 Changelog:
-  v1.1.0: Agregado soporte completo para videos
+  v1.1.2: Actualización completa de documentación de ayuda
+          - Tab de ayuda expandido con todas las features v1.1.0
+          - 13 secciones de documentación profesional
+          - Tips, trucos y advertencias
+          - Changelog visible
+  v1.1.1: Corrección de versiones (sistema de versionado +0.0.1)
+  v1.1.0: Mejoras significativas de UX/UI
+          - Corrección: Modal de eliminación simplificado (sin input DELETE)
+          - Corrección: Botón "Seleccionar todas" agregado
+          - Corrección: Carpetas de revisión vacías se eliminan automáticamente
+          - Feature: Selección por rango con Shift+Click
+          - Feature: Contador de espacio en disco (MB/GB)
+          - Feature: Modal de atajos de teclado (botón ? o tecla H)
+          - Feature: Historial de navegación ◀ ▶ (como navegador web)
+          - Feature: Favoritos/Bookmarks de carpetas (persistencia localStorage)
+  v1.0.7: Agregado soporte completo para videos
           - Extensiones soportadas: MP4, MOV, MKV, AVI, M4V
           - Generación de thumbnails con OpenCV (primer frame)
           - Endpoint /api/video para streaming
@@ -298,8 +313,10 @@ def scan():
                         camera_brand = get_camera_brand(raw_file)
                         processed_raws.add(raw_file)
 
-                    # Get file size
+                    # Get file size (JPG + RAW if exists)
                     file_size = entry.stat().st_size
+                    if raw_file and os.path.exists(raw_file):
+                        file_size += os.path.getsize(raw_file)
 
                     photos.append({
                         'jpg': entry.path,
@@ -564,10 +581,23 @@ def restore_files():
             except Exception as e:
                 errors.append(f"Error restoring {file_info.get('name', 'unknown')}: {str(e)}")
 
+        # Check if folder is empty and is a review folder, then delete it
+        folder_deleted = False
+        folder_name = os.path.basename(folder)
+        if folder_name == config['destination_folder']:
+            try:
+                if os.path.exists(folder) and os.path.isdir(folder):
+                    if not os.listdir(folder):  # Check if empty
+                        os.rmdir(folder)
+                        folder_deleted = True
+            except Exception as e:
+                print(f"Could not delete empty review folder: {e}")
+
         return jsonify({
             'success': True,
             'restored': restored_count,
-            'errors': errors
+            'errors': errors,
+            'folder_deleted': folder_deleted
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -578,6 +608,7 @@ def delete_files():
     try:
         data = request.json
         files = data.get('files', [])
+        folder = data.get('folder')  # Get folder path to check if empty after deletion
         config = load_config()
 
         if not files:
@@ -618,10 +649,24 @@ def delete_files():
             except Exception as e:
                 errors.append(f"Error deleting {file_info.get('name', 'unknown')}: {str(e)}")
 
+        # Check if folder is empty and is a review folder, then delete it
+        folder_deleted = False
+        if folder:
+            folder_name = os.path.basename(folder)
+            if folder_name == config['destination_folder']:
+                try:
+                    if os.path.exists(folder) and os.path.isdir(folder):
+                        if not os.listdir(folder):  # Check if empty
+                            os.rmdir(folder)
+                            folder_deleted = True
+                except Exception as e:
+                    print(f"Could not delete empty review folder: {e}")
+
         return jsonify({
             'success': True,
             'deleted': deleted_count,
-            'errors': errors
+            'errors': errors,
+            'folder_deleted': folder_deleted
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500

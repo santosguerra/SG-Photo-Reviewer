@@ -1,8 +1,15 @@
 /*
  * SG Photo Reviewer - Stylesheet
- * Version 1.1.0 - 2025-10-16
+ * Version 1.1.2 - 2025-10-19
  * Changelog:
- *   v1.0.7: Corregido espaciado uniforme en grid de fotos
+ *   v1.1.2: Mejoras visuales en tab de ayuda
+ *           - Estilos para secciones de ayuda
+ *           - Títulos con borde inferior azul
+ *           - Strong en color azul para destacar
+ *   v1.1.1: Estilos completos para nuevas features v1.1.0
+ *           - Botones de historial (◀ ▶)
+ *           - Sistema de favoritos/bookmarks
+ *           - Modal de atajos de teclado
  *   v1.1.0: Agregado soporte completo para videos (MP4, MOV, MKV, AVI, M4V)
  *           - Thumbnails de primer frame con OpenCV
  *           - Badge "VIDEO" morado
@@ -10,6 +17,7 @@
  *           - Reproductor HTML5 en carrusel
  *           - Nombres de archivos debajo de cada thumbnail
  *           - Corrección hover sin scale (evita superposición)
+ *   v1.0.7: Corregido espaciado uniforme en grid de fotos
  */
 
 * {
@@ -926,6 +934,28 @@ kbd {
     cursor: not-allowed;
 }
 
+.btn-history {
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+    min-width: 40px;
+}
+
+.btn-history:hover:not(:disabled) {
+    background-color: #4a9eff;
+    color: #fff;
+}
+
+.btn-history:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
 #breadcrumb-path {
     display: flex;
     gap: 8px;
@@ -1167,4 +1197,275 @@ kbd {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
+}
+
+/* Shortcuts Button */
+.btn-shortcuts {
+    background-color: #4a9eff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-shortcuts:hover {
+    background-color: #357abd;
+    transform: scale(1.1);
+}
+
+/* Shortcuts Modal */
+.shortcuts-modal-content {
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.shortcuts-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 32px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.shortcuts-close:hover {
+    background-color: #444;
+    color: #fff;
+}
+
+.shortcuts-modal-content h2 {
+    margin-bottom: 24px;
+    padding-right: 40px;
+}
+
+.shortcuts-section {
+    margin-bottom: 24px;
+}
+
+.shortcuts-section h3 {
+    color: #4a9eff;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #3a3a3a;
+    padding-bottom: 6px;
+}
+
+.shortcut-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    gap: 16px;
+}
+
+.shortcut-item kbd {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: #e0e0e0;
+    min-width: 32px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.shortcut-item span {
+    color: #ccc;
+    font-size: 14px;
+}
+
+/* Bookmarks */
+.btn-bookmark {
+    background-color: transparent;
+    color: #ffd700;
+    border: 1px solid #666;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.2s;
+    min-width: 40px;
+}
+
+.btn-bookmark:hover {
+    border-color: #ffd700;
+    background-color: rgba(255, 215, 0, 0.1);
+}
+
+.btn-bookmark.active {
+    color: #ffd700;
+    background-color: rgba(255, 215, 0, 0.2);
+    border-color: #ffd700;
+}
+
+.bookmarks-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.btn-bookmarks-toggle {
+    background-color: #3a3a3a;
+    color: #ffd700;
+    border: 1px solid #666;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-bookmarks-toggle:hover {
+    background-color: #4a4a4a;
+    border-color: #ffd700;
+}
+
+#bookmarks-count {
+    color: #999;
+    font-size: 12px;
+}
+
+.bookmarks-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    min-width: 250px;
+    max-height: 400px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.bookmark-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid #3a3a3a;
+    transition: background-color 0.2s;
+}
+
+.bookmark-item:last-child {
+    border-bottom: none;
+}
+
+.bookmark-item:hover {
+    background-color: #3a3a3a;
+}
+
+.bookmark-link {
+    flex: 1;
+    cursor: pointer;
+    color: #e0e0e0;
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bookmark-link:hover {
+    color: #4a9eff;
+}
+
+.bookmark-remove {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.bookmark-remove:hover {
+    background-color: #ff4444;
+    color: #fff;
+}
+
+.bookmark-empty {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
+/* Help Tab Enhancements */
+.help-features h3 {
+    color: #4a9eff;
+    margin-top: 16px;
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+.help-features ul {
+    margin-bottom: 16px;
+}
+
+.config-section h2 {
+    border-bottom: 2px solid #4a9eff;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+}
+
+.config-section h3 {
+    color: #4a9eff;
+    margin-top: 20px;
+    margin-bottom: 12px;
+}
+
+.config-section h4 {
+    color: #888;
+    margin-top: 12px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.help-list {
+    line-height: 1.8;
+}
+
+.help-list li {
+    margin-bottom: 8px;
+}
+
+.help-list strong {
+    color: #4a9eff;
 }

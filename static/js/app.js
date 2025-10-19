@@ -7,7 +7,11 @@ const state = {
     currentView: 'grid',
     currentCarouselIndex: 0,
     loadedPhotos: 50,
-    isReviewFolder: false
+    isReviewFolder: false,
+    lastMarkedIndex: null,  // For shift+click range selection
+    navigationHistory: [],  // History of visited paths
+    historyIndex: -1,  // Current position in history
+    bookmarks: []  // Favorite folders
 };
 
 // Initialize app
@@ -50,10 +54,13 @@ function setupEventListeners() {
 
     // Panel dual navigation events
     document.getElementById('back-btn').addEventListener('click', navigateBack);
+    document.getElementById('history-back').addEventListener('click', navigateHistoryBack);
+    document.getElementById('history-forward').addEventListener('click', navigateHistoryForward);
     document.getElementById('toggle-folders').addEventListener('click', toggleFoldersPanel);
 
     // Reviewer events
     document.getElementById('toggle-view').addEventListener('click', toggleView);
+    document.getElementById('mark-all').addEventListener('click', markAll);
     document.getElementById('unmark-all').addEventListener('click', unmarkAll);
     document.getElementById('delete-jpgs').addEventListener('click', showDeleteJpgsModal);
     document.getElementById('move-photos').addEventListener('click', movePhotos);
@@ -66,14 +73,18 @@ function setupEventListeners() {
     // Delete modal events
     document.getElementById('delete-cancel').addEventListener('click', hideDeleteModal);
     document.getElementById('delete-confirm').addEventListener('click', deletePhotos);
-    document.getElementById('delete-confirmation-input').addEventListener('input', (e) => {
-        const btn = document.getElementById('delete-confirm');
-        btn.disabled = e.target.value !== 'ELIMINAR';
-    });
 
     // Delete JPGs modal events
     document.getElementById('delete-jpgs-cancel').addEventListener('click', hideDeleteJpgsModal);
     document.getElementById('delete-jpgs-confirm').addEventListener('click', deleteJpgs);
+
+    // Shortcuts modal events
+    document.getElementById('shortcuts-btn').addEventListener('click', showShortcutsModal);
+    document.getElementById('shortcuts-close').addEventListener('click', hideShortcutsModal);
+
+    // Bookmarks events
+    document.getElementById('toggle-bookmark').addEventListener('click', toggleBookmark);
+    document.getElementById('bookmarks-toggle').addEventListener('click', toggleBookmarksList);
 
     // Keyboard shortcuts for carousel
     document.addEventListener('keydown', handleKeyboard);
@@ -96,6 +107,9 @@ async function loadConfig() {
         if (state.config.enable_delete_button === undefined) {
             state.config.enable_delete_button = false;
         }
+
+        // Load bookmarks from config or localStorage
+        loadBookmarks();
 
         renderConfig();
         checkPermissions();
@@ -235,14 +249,29 @@ sudo mount -o remount,uid=santosg,gid=santosg ${result.path}</code>
 }
 
 // Panel Dual Navigation Functions
-async function navigateToFolder(path) {
+async function navigateToFolder(path, skipHistory = false) {
     state.currentPath = path;
+
+    // Add to navigation history (unless we're navigating via history buttons)
+    if (!skipHistory) {
+        // Remove any forward history when navigating to a new path
+        if (state.historyIndex < state.navigationHistory.length - 1) {
+            state.navigationHistory = state.navigationHistory.slice(0, state.historyIndex + 1);
+        }
+
+        // Add new path to history
+        state.navigationHistory.push(path);
+        state.historyIndex = state.navigationHistory.length - 1;
+
+        updateHistoryButtons();
+    }
 
     // Ocultar carrusel si está activo
     document.getElementById('carousel-view').classList.remove('active');
     document.getElementById('revisor-panel').style.display = 'flex';
 
     updateBreadcrumb(path);
+    updateBookmarkButton();  // Update bookmark star
 
     try {
         showLoading(true);
@@ -386,6 +415,33 @@ function navigateBack() {
     navigateToFolder(parentPath);
 }
 
+// History Navigation
+function navigateHistoryBack() {
+    if (state.historyIndex > 0) {
+        state.historyIndex--;
+        const path = state.navigationHistory[state.historyIndex];
+        navigateToFolder(path, true); // Skip adding to history
+        updateHistoryButtons();
+    }
+}
+
+function navigateHistoryForward() {
+    if (state.historyIndex < state.navigationHistory.length - 1) {
+        state.historyIndex++;
+        const path = state.navigationHistory[state.historyIndex];
+        navigateToFolder(path, true); // Skip adding to history
+        updateHistoryButtons();
+    }
+}
+
+function updateHistoryButtons() {
+    const backBtn = document.getElementById('history-back');
+    const forwardBtn = document.getElementById('history-forward');
+
+    backBtn.disabled = state.historyIndex <= 0;
+    forwardBtn.disabled = state.historyIndex >= state.navigationHistory.length - 1;
+}
+
 // Toggle Folders Panel
 function toggleFoldersPanel() {
     const panel = document.getElementById('folders-panel');
@@ -459,7 +515,7 @@ function renderPhotos(photos) {
 
         checkbox.addEventListener('click', (e) => {
             e.stopPropagation();
-            toggleMark(index);
+            toggleMark(index, e.shiftKey);
         });
 
         // Create badges
@@ -698,11 +754,27 @@ function navigateCarousel(direction) {
 }
 
 // Marking Functions
-function toggleMark(index) {
-    if (state.markedPhotos.has(index)) {
-        state.markedPhotos.delete(index);
+function toggleMark(index, shiftKey = false) {
+    // Shift+Click range selection
+    if (shiftKey && state.lastMarkedIndex !== null && state.lastMarkedIndex !== index) {
+        const start = Math.min(state.lastMarkedIndex, index);
+        const end = Math.max(state.lastMarkedIndex, index);
+
+        // Mark all photos in range
+        for (let i = start; i <= end; i++) {
+            state.markedPhotos.add(i);
+        }
+
+        const rangeSize = end - start + 1;
+        showToast(`${rangeSize} fotos seleccionadas en rango`, 'success');
     } else {
-        state.markedPhotos.add(index);
+        // Normal toggle
+        if (state.markedPhotos.has(index)) {
+            state.markedPhotos.delete(index);
+        } else {
+            state.markedPhotos.add(index);
+            state.lastMarkedIndex = index; // Remember last marked
+        }
     }
 
     if (state.currentView === 'grid') {
@@ -712,6 +784,24 @@ function toggleMark(index) {
     }
 
     updateCounters();
+}
+
+function markAll() {
+    if (state.photos.length === 0) return;
+
+    // Mark all photos in current folder
+    for (let i = 0; i < state.photos.length; i++) {
+        state.markedPhotos.add(i);
+    }
+
+    if (state.currentView === 'grid') {
+        renderPhotos(state.photos);
+    } else {
+        updateCarousel();
+    }
+
+    updateCounters();
+    showToast(`${state.photos.length} fotos seleccionadas`, 'success');
 }
 
 function unmarkAll() {
@@ -805,9 +895,17 @@ async function restorePhotos() {
         const result = await response.json();
 
         if (result.success) {
-            showToast(`${result.restored} fotos restauradas correctamente`, 'success');
-            // Reload current folder
-            await navigateToFolder(state.currentPath);
+            let message = `${result.restored} fotos restauradas correctamente`;
+            if (result.folder_deleted) {
+                message += ' - Carpeta de revisión eliminada (vacía)';
+                // Navigate to parent folder since current folder was deleted
+                const parentPath = state.currentPath.split('/').slice(0, -1).join('/') || '';
+                await navigateToFolder(parentPath);
+            } else {
+                // Reload current folder
+                await navigateToFolder(state.currentPath);
+            }
+            showToast(message, 'success');
         } else {
             showToast(result.error || 'Error restaurando fotos', 'error');
         }
@@ -830,11 +928,8 @@ function showDeleteModal() {
 
     const modal = document.getElementById('delete-modal');
     const message = document.getElementById('delete-modal-message');
-    const input = document.getElementById('delete-confirmation-input');
 
-    message.textContent = `¿Eliminar definitivamente ${count} archivos? Esta acción no se puede deshacer.`;
-    input.value = '';
-    document.getElementById('delete-confirm').disabled = true;
+    message.textContent = `Vas a eliminar ${count} archivos PERMANENTEMENTE. Esta acción es IRRECUPERABLE.`;
 
     modal.style.display = 'flex';
 }
@@ -854,16 +949,25 @@ async function deletePhotos() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                files: filesToDelete
+                files: filesToDelete,
+                folder: state.currentPath
             })
         });
 
         const result = await response.json();
 
         if (result.success) {
-            showToast(`${result.deleted} fotos eliminadas correctamente`, 'success');
-            // Reload current folder
-            await navigateToFolder(state.currentPath);
+            let message = `${result.deleted} fotos eliminadas correctamente`;
+            if (result.folder_deleted) {
+                message += ' - Carpeta de revisión eliminada (vacía)';
+                // Navigate to parent folder since current folder was deleted
+                const parentPath = state.currentPath.split('/').slice(0, -1).join('/') || '';
+                await navigateToFolder(parentPath);
+            } else {
+                // Reload current folder
+                await navigateToFolder(state.currentPath);
+            }
+            showToast(message, 'success');
         } else {
             showToast(result.error || 'Error eliminando fotos', 'error');
         }
@@ -972,6 +1076,24 @@ function closeCarousel() {
 
 // Keyboard Shortcuts
 function handleKeyboard(e) {
+    // Check if shortcuts modal should open
+    if (e.key === '?' || e.key === 'h' || e.key === 'H') {
+        // Don't trigger if typing in an input field
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        e.preventDefault();
+        showShortcutsModal();
+        return;
+    }
+
+    // Close modals with Escape
+    if (e.key === 'Escape') {
+        const shortcutsModal = document.getElementById('shortcuts-modal');
+        if (shortcutsModal.style.display === 'flex') {
+            hideShortcutsModal();
+            return;
+        }
+    }
+
     if (state.currentView !== 'carousel') return;
 
     switch(e.key) {
@@ -996,6 +1118,15 @@ function handleKeyboard(e) {
     }
 }
 
+// Shortcuts Modal
+function showShortcutsModal() {
+    document.getElementById('shortcuts-modal').style.display = 'flex';
+}
+
+function hideShortcutsModal() {
+    document.getElementById('shortcuts-modal').style.display = 'none';
+}
+
 // Lazy Loading
 function handleScroll(e) {
     const grid = e.target;
@@ -1013,8 +1144,25 @@ function updateCounters() {
     const markedCount = state.markedPhotos.size;
     const totalCount = state.photos.length;
 
+    // Calculate total size of marked photos
+    let totalSize = 0;
+    state.markedPhotos.forEach(index => {
+        const photo = state.photos[index];
+        if (photo) {
+            totalSize += photo.size || 0;
+            // Add RAW size if exists
+            if (photo.raw) {
+                // Estimate RAW size (will be included in photo.size from backend)
+                // The size already includes both JPG and RAW
+            }
+        }
+    });
+
+    // Format size
+    const sizeText = formatFileSize(totalSize);
+
     // Actualizar contador en panel de fotos
-    document.getElementById('marked-count').textContent = `${markedCount} marcadas`;
+    document.getElementById('marked-count').textContent = `${markedCount} marcadas (${sizeText})`;
 
     // Actualizar botones de acción
     if (state.isReviewFolder) {
@@ -1030,8 +1178,17 @@ function updateCounters() {
     // Actualizar contador en carrusel
     if (state.currentView === 'carousel') {
         document.getElementById('carousel-counter').textContent =
-            `Foto ${state.currentCarouselIndex + 1} de ${totalCount} - ${markedCount} marcadas`;
+            `Foto ${state.currentCarouselIndex + 1} de ${totalCount} - ${markedCount} marcadas (${sizeText})`;
     }
+}
+
+// Format file size helper
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
 // UI Helpers
@@ -1060,3 +1217,125 @@ async function loadVersion() {
         console.error('Error loading version:', error);
     }
 }
+
+// Bookmarks Functions
+function loadBookmarks() {
+    const stored = localStorage.getItem('photoReviewerBookmarks');
+    if (stored) {
+        try {
+            state.bookmarks = JSON.parse(stored);
+            updateBookmarksUI();
+        } catch (e) {
+            state.bookmarks = [];
+        }
+    }
+}
+
+function saveBookmarks() {
+    localStorage.setItem('photoReviewerBookmarks', JSON.stringify(state.bookmarks));
+    updateBookmarksUI();
+}
+
+function isBookmarked(path) {
+    return state.bookmarks.some(b => b.path === path);
+}
+
+function toggleBookmark() {
+    if (!state.currentPath) {
+        showToast('Navega a una carpeta para agregarla a favoritos', 'error');
+        return;
+    }
+
+    const path = state.currentPath;
+    const index = state.bookmarks.findIndex(b => b.path === path);
+
+    if (index >= 0) {
+        // Remove bookmark
+        state.bookmarks.splice(index, 1);
+        showToast('Carpeta eliminada de favoritos', 'success');
+    } else {
+        // Add bookmark
+        const folderName = path.split('/').filter(p => p).pop() || 'Raíz';
+        state.bookmarks.push({ path, name: folderName });
+        showToast('Carpeta agregada a favoritos', 'success');
+    }
+
+    saveBookmarks();
+    updateBookmarkButton();
+}
+
+function updateBookmarkButton() {
+    const btn = document.getElementById('toggle-bookmark');
+    if (isBookmarked(state.currentPath)) {
+        btn.textContent = '★';
+        btn.classList.add('active');
+        btn.title = 'Quitar de favoritos';
+    } else {
+        btn.textContent = '☆';
+        btn.classList.remove('active');
+        btn.title = 'Agregar a favoritos';
+    }
+}
+
+function updateBookmarksUI() {
+    // Update button
+    updateBookmarkButton();
+
+    // Update count
+    document.getElementById('bookmarks-count').textContent = `(${state.bookmarks.length})`;
+
+    // Update list
+    const list = document.getElementById('bookmarks-list');
+    list.innerHTML = '';
+
+    if (state.bookmarks.length === 0) {
+        list.innerHTML = '<div class="bookmark-empty">No hay favoritos guardados</div>';
+        return;
+    }
+
+    state.bookmarks.forEach((bookmark, index) => {
+        const item = document.createElement('div');
+        item.className = 'bookmark-item';
+
+        const link = document.createElement('span');
+        link.className = 'bookmark-link';
+        link.textContent = bookmark.name;
+        link.title = bookmark.path;
+        link.addEventListener('click', () => {
+            navigateToFolder(bookmark.path);
+            toggleBookmarksList(); // Close dropdown
+        });
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'bookmark-remove';
+        removeBtn.textContent = '×';
+        removeBtn.title = 'Eliminar favorito';
+        removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            state.bookmarks.splice(index, 1);
+            saveBookmarks();
+        });
+
+        item.appendChild(link);
+        item.appendChild(removeBtn);
+        list.appendChild(item);
+    });
+}
+
+function toggleBookmarksList() {
+    const list = document.getElementById('bookmarks-list');
+    if (list.style.display === 'none') {
+        list.style.display = 'block';
+    } else {
+        list.style.display = 'none';
+    }
+}
+
+// Close bookmarks dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('bookmarks-dropdown');
+    const list = document.getElementById('bookmarks-list');
+    if (!dropdown.contains(e.target)) {
+        list.style.display = 'none';
+    }
+});
