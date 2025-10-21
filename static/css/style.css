@@ -126,6 +126,7 @@ body {
 .config-container {
     max-width: 1080px;
     margin: 0 auto;
+    padding-top: 20px;
 }
 
 .config-section {
@@ -972,7 +973,7 @@ kbd {
 #revisor-panel {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 120px);
+    height: calc(100vh - 60px);
     overflow: hidden;
 }
 
@@ -1265,9 +1266,9 @@ kbd {
     background-color: #4a9eff;
     color: white;
     border: none;
-    border-radius: 50%;
-    width: 28px;
-    height: 28px;
+    border-radius: 6px;
+    /*width: 28px;
+    height: 28px;*/
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
@@ -1296,7 +1297,7 @@ kbd {
     right: 15px;
     background: none;
     border: none;
-    color: #999;
+    color: #f6f6f6;
     font-size: 32px;
     cursor: pointer;
     line-height: 1;
@@ -1308,11 +1309,13 @@ kbd {
     justify-content: center;
     border-radius: 4px;
     transition: all 0.2s;
+    background-color: #EB0846;
 }
 
 .shortcuts-close:hover {
-    background-color: #444;
+    background-color: #B90033;
     color: #fff;
+    transform: scale(1.3);
 }
 
 .shortcuts-modal-content h2 {
