@@ -35,12 +35,21 @@ function initTabs() {
             tab.classList.add('active');
             const targetTab = tab.dataset.tab;
 
-            if (targetTab === 'config') {
-                document.getElementById('config-tab').classList.add('active');
-            } else if (targetTab === 'reviewer') {
-                document.getElementById('reviewer-tab-content').classList.add('active');
-            } else if (targetTab === 'help') {
-                document.getElementById('help-tab').classList.add('active');
+            // Map tab names to their content IDs
+            const tabMapping = {
+                'reviewer': 'reviewer-tab-content',
+                'collections': 'collections-tab',
+                'search': 'search-tab',
+                'config': 'config-tab',
+                'help': 'help-tab'
+            };
+
+            const targetId = tabMapping[targetTab];
+            if (targetId) {
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.classList.add('active');
+                }
             }
         });
     });

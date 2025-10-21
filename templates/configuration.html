@@ -1,0 +1,38 @@
+<!-- Config Tab -->
+<div class="tab-content" id="config-tab">
+    <div class="config-container">
+        <section class="config-section">
+            <h2>Puntos de Montaje</h2>
+            <div id="mount-points-list"></div>
+            <div class="input-group">
+                <input type="text" id="new-mount-point" placeholder="/ruta/al/montaje">
+                <button id="add-mount-point">Agregar</button>
+            </div>
+        </section>
+
+        <section class="config-section">
+            <h2>Carpeta de Destino</h2>
+            <div class="input-group">
+                <input type="text" id="destination-folder" placeholder="para-revision">
+            </div>
+        </section>
+
+        <section class="config-section">
+            <h2>Opciones de Eliminación</h2>
+            <div class="checkbox-group">
+                <label>
+                    <input type="checkbox" id="enable-delete-button">
+                    <span>Habilitar botón de eliminar</span>
+                </label>
+            </div>
+            <p class="config-note">Permite eliminar archivos definitivamente. Por defecto solo activo en carpeta de revisión.</p>
+        </section>
+
+        <button id="save-config" class="btn-primary">Guardar Configuración</button>
+
+        <section class="config-section">
+            <h2>Diagnóstico de Permisos</h2>
+            <div id="permissions-diagnostic"></div>
+        </section>
+    </div>
+</div>

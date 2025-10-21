@@ -314,7 +314,7 @@ def generate_video_thumbnail(video_path):
         img.thumbnail(THUMBNAIL_SIZE, Image.Resampling.LANCZOS)
 
         # Save thumbnail
-        img.save(thumbnail_path, 'JPEG', quality=85)
+        img.save(thumbnail_path, 'JPEG', quality=78, optimize=True)
         return thumbnail_path
 
     except Exception as e:
@@ -356,7 +356,7 @@ def generate_thumbnail(image_path):
         img.thumbnail(THUMBNAIL_SIZE, Image.Resampling.LANCZOS)
 
         # Save thumbnail
-        img.save(thumbnail_path, 'JPEG', quality=85)
+        img.save(thumbnail_path, 'JPEG', quality=78, optimize=True)
         return thumbnail_path
     except Exception as e:
         print(f"Error generating thumbnail for {image_path}: {e}")
@@ -636,7 +636,7 @@ def image():
 
             # Save to BytesIO to send
             img_io = io.BytesIO()
-            img.save(img_io, 'JPEG', quality=95)
+            img.save(img_io, 'JPEG', quality=90, optimize=True)
             img_io.seek(0)
             return send_file(img_io, mimetype='image/jpeg')
         except Exception as e:

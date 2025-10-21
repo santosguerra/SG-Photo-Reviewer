@@ -41,7 +41,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #1a1a1a;
+    background-color: #000;
     color: #e0e0e0;
     height: 100vh;
     overflow: hidden;
@@ -55,9 +55,9 @@ body {
 
 /* Header and Tabs - COMPACTO */
 .header {
-    background-color: #2a2a2a;
-    border-bottom: 1px solid #3a3a3a;
-    padding: 0;
+    background-color: #183253;
+    border-bottom: 1px solid #E9F1DF;
+    padding: 8px;
 }
 
 .app-header {
@@ -84,7 +84,8 @@ body {
     background: none;
     border: none;
     color: #a0a0a0;
-    padding: 12px 24px;
+    padding: 0px 18px;
+    margin-left: 16px;
     cursor: pointer;
     font-size: 13px;
     border-bottom: 2px solid transparent;
@@ -92,13 +93,16 @@ body {
 }
 
 .tab:hover:not(:disabled) {
-    background-color: #333;
+    background-color: #F2385A;
     color: #fff;
+    border-bottom-color: #B90033;
+
 }
 
 .tab.active {
     color: #fff;
-    border-bottom-color: #4a9eff;
+    border-bottom-color:#4a9eff;
+    background-color: #011640;
 }
 
 .tab:disabled {
@@ -111,7 +115,7 @@ body {
     display: none;
     flex: 1;
     overflow: auto;
-    padding: 20px;
+    /*padding: 20px;*/
 }
 
 .tab-content.active {
@@ -120,7 +124,7 @@ body {
 
 /* Config Section */
 .config-container {
-    max-width: 800px;
+    max-width: 1080px;
     margin: 0 auto;
 }
 
@@ -353,7 +357,7 @@ button {
 
 .folder-item {
     background-color: #2a2a2a;
-    padding: 20px;
+    padding: 10px;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
@@ -629,6 +633,22 @@ button {
 .carousel-metadata .meta-label {
     color: #fff;
     font-weight: normal;
+}
+
+/* Coming Soon pages */
+.coming-soon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 400px;
+}
+
+.coming-soon-text {
+    font-size: 48px;
+    color: #666;
+    font-weight: 300;
+    text-align: center;
 }
 
 /* Carousel View */

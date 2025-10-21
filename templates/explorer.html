@@ -1,0 +1,81 @@
+<!-- Reviewer Tab -->
+<div class="tab-content active" id="reviewer-tab-content">
+    <div class="reviewer-container">
+        <!-- Panel Dual de Navegación -->
+        <div id="revisor-panel">
+            <!-- Breadcrumb Bar -->
+            <div class="breadcrumb-bar">
+                <button id="back-btn" class="btn-back">← Atrás</button>
+                <button id="history-back" class="btn-history" title="Retroceder en historial" disabled>◀</button>
+                <button id="history-forward" class="btn-history" title="Avanzar en historial" disabled>▶</button>
+                <button id="toggle-bookmark" class="btn-bookmark" title="Agregar/Quitar favorito">☆</button>
+                <div class="bookmarks-dropdown" id="bookmarks-dropdown">
+                    <button class="btn-bookmarks-toggle" id="bookmarks-toggle">★ Favoritos <span id="bookmarks-count">(0)</span></button>
+                    <div class="bookmarks-list" id="bookmarks-list" style="display: none;"></div>
+                </div>
+                <div id="breadcrumb-path"></div>
+            </div>
+
+            <!-- Panel de Subcarpetas -->
+            <div id="folders-panel" class="panel-section">
+                <div class="panel-header">
+                    <span>📁 SUBCARPETAS (<span id="folder-count">0</span>)</span>
+                    <span style="margin-left: 20px;">📷 FOTOS (<span id="photo-count">0</span>)</span>
+                    <button id="toggle-folders" class="btn-toggle">▼ Colapsar</button>
+                </div>
+                <div id="folders-grid" class="folders-grid"></div>
+            </div>
+
+            <!-- Panel de Fotos -->
+            <div id="photos-panel" class="panel-section">
+                <div class="panel-header">
+                    <span></span>
+                    <div class="photo-controls">
+                        <span id="marked-count">0 marcadas</span>
+                        <button id="mark-all" class="btn">Seleccionar todas</button>
+                        <button id="unmark-all" class="btn">Desmarcar todas</button>
+                        <button id="delete-jpgs" class="btn-warning" style="display: none;">Eliminar JPGs (mantener RAW)</button>
+                        <button id="move-photos" class="btn-primary" style="display: none;">Mover 0 fotos a revisión</button>
+                        <button id="restore-photos" class="btn-primary" style="display: none;">Restaurar 0 fotos</button>
+                        <button id="delete-photos" class="btn-danger" style="display: none;">Eliminar 0 fotos definitivamente</button>
+                    </div>
+                </div>
+                <div id="photos-grid" class="photos-grid"></div>
+            </div>
+        </div>
+
+        <!-- Carousel View -->
+        <div class="carousel-view" id="carousel-view">
+            <button class="carousel-close" id="carousel-close">✕ Cerrar</button>
+            <button class="carousel-nav prev" id="carousel-prev">‹</button>
+            <div class="carousel-content">
+                <img id="carousel-image" src="" alt="Photo" style="display: none;">
+                <video id="carousel-video" controls style="display: none;"></video>
+                <div class="carousel-badges" id="carousel-badges"></div>
+                <!-- Metadata panel -->
+                <div class="carousel-metadata" id="carousel-metadata">
+                    <div><span class="meta-label">Tamaño:</span> <span id="meta-filesize"></span></div>
+                    <div><span class="meta-label">Dimensiones:</span> <span id="meta-dimensions"></span></div>
+                    <div id="meta-date-row"><span class="meta-label">Creado el:</span> <span id="meta-date"></span></div>
+                    <div id="meta-camera-row"><span class="meta-label">Camara:</span> <span id="meta-camera"></span></div>
+                    <div id="meta-iso-row"><span class="meta-label">ISO:</span> <span id="meta-iso"></span></div>
+                    <div id="meta-aperture-row"><span class="meta-label">Apertura:</span> <span id="meta-aperture"></span></div>
+                    <div id="meta-shutter-row"><span class="meta-label">Velocidad:</span> <span id="meta-shutter"></span></div>
+                </div>
+                <!-- Loading overlay for carousel -->
+                <div id="carousel-loading-overlay" class="carousel-loading-overlay" style="display: none;">
+                    <div class="loading-content">
+                        <span>Cargando imagen</span>
+                        <span class="loading-dots">
+                            <span>.</span><span>.</span><span>.</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-nav next" id="carousel-next">›</button>
+            <div class="carousel-info">
+                <span id="carousel-counter">Foto 0 de 0 - 0 marcadas</span>
+            </div>
+        </div>
+    </div>
+</div>
