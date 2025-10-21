@@ -5,7 +5,7 @@
         <div id="revisor-panel">
             <!-- Breadcrumb Bar -->
             <div class="breadcrumb-bar">
-                <button id="back-btn" class="btn-back">← Atrás</button>
+                <button id="back-btn" class="btn-back" title="Subir un nivel">↑</button>
                 <button id="history-back" class="btn-history" title="Retroceder en historial" disabled>◀</button>
                 <button id="history-forward" class="btn-history" title="Avanzar en historial" disabled>▶</button>
                 <button id="toggle-bookmark" class="btn-bookmark" title="Agregar/Quitar favorito">☆</button>
@@ -32,12 +32,12 @@
                     <span></span>
                     <div class="photo-controls">
                         <span id="marked-count">0 marcadas</span>
-                        <button id="mark-all" class="btn">Seleccionar todas</button>
-                        <button id="unmark-all" class="btn">Desmarcar todas</button>
-                        <button id="delete-jpgs" class="btn-warning" style="display: none;">Eliminar JPGs (mantener RAW)</button>
+                        <button id="mark-all" class="btn">Selec. Todas</button>
+                        <button id="unmark-all" class="btn">Deselec. Todas</button>
+                        <button id="delete-jpgs" class="btn-warning" title="Elimina los JPG pero Mantiene los RAW" style="display: none;">Eliminar JPGs</button>
                         <button id="move-photos" class="btn-primary" style="display: none;">Mover 0 fotos a revisión</button>
                         <button id="restore-photos" class="btn-primary" style="display: none;">Restaurar 0 fotos</button>
-                        <button id="delete-photos" class="btn-danger" style="display: none;">Eliminar 0 fotos definitivamente</button>
+                        <button id="delete-photos" class="btn-danger" title="Elimina DEFINITIVAMENTE" style="display: none;">Eliminar 0 fotos</button>
                     </div>
                 </div>
                 <div id="photos-grid" class="photos-grid"></div>

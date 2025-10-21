@@ -993,9 +993,10 @@ kbd {
     border-radius: 4px;
     color: #fff;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 500;
     transition: all 0.2s;
+    min-width: 36px;
 }
 
 .btn-back:hover {
