@@ -606,38 +606,29 @@ button {
 /* Carousel Metadata Panel */
 .carousel-metadata {
     position: absolute;
-    bottom: 60px;
-    right: 20px;
-    background-color: rgba(0, 0, 0, 0.85);
-    border: 1px solid #444;
-    border-radius: 8px;
-    padding: 12px 16px;
-    min-width: 300px;
-    max-width: 400px;
+    top: 140px;
+    left: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 6px;
+    padding: 10px 14px;
     z-index: 60;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(8px);
 }
 
-.metadata-item {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 6px;
+.carousel-metadata div {
     font-size: 12px;
-    color: #ccc;
+    color: #fff;
+    line-height: 1.6;
+    margin-bottom: 2px;
 }
 
-.metadata-item:last-child {
+.carousel-metadata div:last-child {
     margin-bottom: 0;
 }
 
-.metadata-item strong {
-    color: #4a9eff;
-    min-width: 90px;
-    flex-shrink: 0;
-}
-
-.metadata-item span {
-    color: #e0e0e0;
+.carousel-metadata .meta-label {
+    color: #fff;
+    font-weight: normal;
 }
 
 /* Carousel View */
@@ -730,9 +721,9 @@ button {
 
 .carousel-close {
     position: absolute;
-    top: 70px;
+    top: 20px;
     right: 20px;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: #4a9eff;
     color: #fff;
     border: none;
     padding: 12px 24px;
@@ -745,7 +736,7 @@ button {
 }
 
 .carousel-close:hover {
-    background-color: rgba(211, 47, 47, 0.9);
+    background-color: #3a8eef;
     transform: scale(1.05);
 }
 

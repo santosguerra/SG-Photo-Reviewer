@@ -43,6 +43,9 @@ from config import load_config, save_config, is_path_allowed
 
 app = Flask(__name__)
 
+# Debug mode for EXIF extraction (set to True to see all EXIF tags in console)
+EXIF_DEBUG = os.environ.get('EXIF_DEBUG', 'False').lower() == 'true'
+
 # RAW file extensions
 RAW_EXTENSIONS = {'.cr2', '.cr3', '.arw', '.nef', '.pef', '.dng', '.raf', '.orf'}
 JPG_EXTENSIONS = {'.jpg', '.jpeg'}
@@ -138,6 +141,142 @@ def get_camera_brand(filename):
         '.orf': 'Olympus'
     }
     return brand_map.get(ext, '')
+
+def extract_exif_data(image_path, debug=False):
+    """Extract EXIF data from image file using rawpy for RAW and exifread for JPG
+
+    Returns dict with: camera_brand, camera_model, iso, aperture, shutter_speed, date
+
+    Args:
+        image_path: Path to the image file
+        debug: If True, prints all available EXIF tags to console
+    """
+    exif_data = {
+        'camera_brand': '',
+        'camera_model': '',
+        'iso': None,
+        'aperture': None,
+        'shutter_speed': None,
+        'date': ''
+    }
+
+    # Detect file type by extension
+    ext = os.path.splitext(image_path)[1].lower()
+    is_raw = ext in RAW_EXTENSIONS
+    is_jpg = ext in JPG_EXTENSIONS
+
+    try:
+        if is_raw:
+            # Use rawpy for RAW files
+            import rawpy
+
+            with rawpy.imread(image_path) as raw:
+                # Get EXIF data from RAW
+                metadata = raw.metadata
+
+                if debug:
+                    print(f"\n=== EXIF DEBUG (rawpy) for: {os.path.basename(image_path)} ===")
+                    print(f"  Make: {metadata.make if hasattr(metadata, 'make') else 'N/A'}")
+                    print(f"  Model: {metadata.model if hasattr(metadata, 'model') else 'N/A'}")
+                    print(f"  ISO: {metadata.iso_speed if hasattr(metadata, 'iso_speed') else 'N/A'}")
+                    print(f"  Aperture: {metadata.aperture if hasattr(metadata, 'aperture') else 'N/A'}")
+                    print(f"  Shutter: {metadata.shutter if hasattr(metadata, 'shutter') else 'N/A'}")
+                    print(f"  Timestamp: {metadata.timestamp if hasattr(metadata, 'timestamp') else 'N/A'}")
+                    print("=" * 60)
+
+                # Extract camera make (brand)
+                if hasattr(metadata, 'make') and metadata.make:
+                    exif_data['camera_brand'] = metadata.make.strip()
+
+                # Extract camera model
+                if hasattr(metadata, 'model') and metadata.model:
+                    exif_data['camera_model'] = metadata.model.strip()
+
+                # Extract ISO
+                if hasattr(metadata, 'iso_speed') and metadata.iso_speed:
+                    exif_data['iso'] = int(metadata.iso_speed)
+
+                # Extract Aperture
+                if hasattr(metadata, 'aperture') and metadata.aperture:
+                    exif_data['aperture'] = round(metadata.aperture, 1)
+
+                # Extract Shutter Speed
+                if hasattr(metadata, 'shutter') and metadata.shutter:
+                    shutter = metadata.shutter
+                    if shutter >= 1:
+                        exif_data['shutter_speed'] = str(round(shutter, 2))
+                    else:
+                        # Convert to fraction format (e.g., 1/250)
+                        exif_data['shutter_speed'] = f"1/{int(1/shutter)}"
+
+                # Extract DateTime from timestamp
+                if hasattr(metadata, 'timestamp') and metadata.timestamp:
+                    import datetime
+                    dt = datetime.datetime.fromtimestamp(metadata.timestamp)
+                    exif_data['date'] = dt.strftime('%Y:%m:%d %H:%M:%S')
+
+        elif is_jpg:
+            # Use exifread for JPG files
+            import exifread
+
+            with open(image_path, 'rb') as f:
+                tags = exifread.process_file(f, details=False)
+
+                if debug:
+                    print(f"\n=== EXIF DEBUG (exifread) for: {os.path.basename(image_path)} ===")
+                    if tags:
+                        for tag, value in tags.items():
+                            print(f"  {tag}: {value}")
+                    else:
+                        print("  NO EXIF TAGS FOUND")
+                    print("=" * 60)
+
+                # Extract camera make (brand)
+                if 'Image Make' in tags:
+                    exif_data['camera_brand'] = str(tags['Image Make']).strip()
+
+                # Extract camera model
+                if 'Image Model' in tags:
+                    exif_data['camera_model'] = str(tags['Image Model']).strip()
+
+                # Extract ISO
+                if 'EXIF ISOSpeedRatings' in tags:
+                    exif_data['iso'] = int(str(tags['EXIF ISOSpeedRatings']))
+
+                # Extract Aperture (F-number)
+                if 'EXIF FNumber' in tags:
+                    f_number = tags['EXIF FNumber']
+                    if hasattr(f_number, 'num') and hasattr(f_number, 'den'):
+                        exif_data['aperture'] = round(f_number.num / f_number.den, 1)
+                    else:
+                        try:
+                            exif_data['aperture'] = round(float(str(f_number)), 1)
+                        except:
+                            pass
+
+                # Extract Shutter Speed (Exposure Time)
+                if 'EXIF ExposureTime' in tags:
+                    exposure = tags['EXIF ExposureTime']
+                    if hasattr(exposure, 'num') and hasattr(exposure, 'den'):
+                        if exposure.num == 1:
+                            exif_data['shutter_speed'] = f"1/{exposure.den}"
+                        else:
+                            exif_data['shutter_speed'] = str(round(exposure.num / exposure.den, 2))
+                    else:
+                        exif_data['shutter_speed'] = str(exposure)
+
+                # Extract DateTime Original (preferred) or DateTime
+                if 'EXIF DateTimeOriginal' in tags:
+                    exif_data['date'] = str(tags['EXIF DateTimeOriginal'])
+                elif 'Image DateTime' in tags:
+                    exif_data['date'] = str(tags['Image DateTime'])
+
+    except Exception as e:
+        if debug:
+            print(f"ERROR extracting EXIF from {os.path.basename(image_path)}: {e}")
+        pass
+
+    return exif_data
 
 def generate_video_thumbnail(video_path):
     """Generate thumbnail from first frame of video"""
@@ -351,11 +490,14 @@ def scan():
                 if entry.is_file() and is_jpg_file(entry.name):
                     raw_file = find_paired_raw(entry.path)
 
-                    # Get camera brand
-                    camera_brand = ''
+                    # Extract EXIF data
+                    # Rule: If JPG+RAW paired, use RAW data; otherwise use JPG data
+                    exif_data = {}
                     if raw_file:
-                        camera_brand = get_camera_brand(raw_file)
+                        exif_data = extract_exif_data(raw_file, debug=EXIF_DEBUG)
                         processed_raws.add(raw_file)
+                    else:
+                        exif_data = extract_exif_data(entry.path, debug=EXIF_DEBUG)
 
                     # Get file size (JPG + RAW if exists)
                     file_size = entry.stat().st_size
@@ -368,7 +510,12 @@ def scan():
                         'name': entry.name,
                         'type': 'jpg+raw' if raw_file else 'jpg_only',
                         'media_type': 'image',
-                        'camera_brand': camera_brand,
+                        'camera_brand': exif_data.get('camera_brand', ''),
+                        'camera_model': exif_data.get('camera_model', ''),
+                        'iso': exif_data.get('iso'),
+                        'aperture': exif_data.get('aperture'),
+                        'shutter_speed': exif_data.get('shutter_speed'),
+                        'date': exif_data.get('date', ''),
                         'size': file_size,
                         'display_path': entry.path  # Path to use for display (thumbnail/image)
                     })
@@ -381,8 +528,8 @@ def scan():
             try:
                 if entry.is_file() and is_raw_file(entry.name):
                     if entry.path not in processed_raws:
-                        # This is an orphan RAW
-                        camera_brand = get_camera_brand(entry.path)
+                        # This is an orphan RAW - extract EXIF from RAW
+                        exif_data = extract_exif_data(entry.path, debug=EXIF_DEBUG)
                         file_size = entry.stat().st_size
 
                         photos.append({
@@ -391,7 +538,12 @@ def scan():
                             'name': entry.name,
                             'type': 'raw_only',
                             'media_type': 'image',
-                            'camera_brand': camera_brand,
+                            'camera_brand': exif_data.get('camera_brand', ''),
+                            'camera_model': exif_data.get('camera_model', ''),
+                            'iso': exif_data.get('iso'),
+                            'aperture': exif_data.get('aperture'),
+                            'shutter_speed': exif_data.get('shutter_speed'),
+                            'date': exif_data.get('date', ''),
                             'size': file_size,
                             'display_path': entry.path  # Use RAW for display
                         })
@@ -413,6 +565,11 @@ def scan():
                         'type': 'video',
                         'media_type': 'video',
                         'camera_brand': '',
+                        'camera_model': '',
+                        'iso': None,
+                        'aperture': None,
+                        'shutter_speed': None,
+                        'date': '',
                         'size': file_size,
                         'display_path': entry.path  # Use video path for thumbnail
                     })

@@ -711,7 +711,7 @@ function updateCarousel() {
             }
 
             // Update dimensions after image loads
-            document.getElementById('meta-dimensions').textContent = `${newImg.naturalWidth} × ${newImg.naturalHeight} px`;
+            document.getElementById('meta-dimensions').textContent = `${newImg.naturalWidth} x ${newImg.naturalHeight} px`;
         };
 
         newImg.onerror = () => {
@@ -737,37 +737,61 @@ function updateCarousel() {
 }
 
 function updateCarouselMetadata(photo) {
-    // Filename
-    document.getElementById('meta-filename').textContent = photo.name || '-';
-
-    // File size
+    // Tamaño: (siempre visible)
     document.getElementById('meta-filesize').textContent = formatFileSize(photo.size || 0);
 
-    // Dimensions (will be set after image loads)
+    // Dimensiones: (siempre visible, se actualiza cuando carga la imagen)
     const img = document.getElementById('carousel-image');
     if (photo.type !== 'video' && img.complete && img.naturalWidth) {
-        document.getElementById('meta-dimensions').textContent = `${img.naturalWidth} × ${img.naturalHeight} px`;
+        document.getElementById('meta-dimensions').textContent = `${img.naturalWidth} x ${img.naturalHeight} px`;
     } else {
         document.getElementById('meta-dimensions').textContent = '-';
     }
 
-    // Date (if available from EXIF or file metadata)
-    document.getElementById('meta-date').textContent = photo.date || '-';
-
-    // Camera
-    const cameraInfo = photo.camera_brand ? `${photo.camera_brand}${photo.camera_model ? ' ' + photo.camera_model : ''}` : '-';
-    document.getElementById('meta-camera').textContent = cameraInfo;
-
-    // Exposure (ISO, aperture, shutter speed)
-    let exposureInfo = '-';
-    if (photo.iso || photo.aperture || photo.shutter_speed) {
-        const parts = [];
-        if (photo.iso) parts.push(`ISO ${photo.iso}`);
-        if (photo.aperture) parts.push(`f/${photo.aperture}`);
-        if (photo.shutter_speed) parts.push(`${photo.shutter_speed}s`);
-        exposureInfo = parts.join(' • ');
+    // Creado el: (mostrar si existe)
+    const dateRow = document.getElementById('meta-date-row');
+    if (photo.date) {
+        document.getElementById('meta-date').textContent = photo.date;
+        dateRow.style.display = '';
+    } else {
+        dateRow.style.display = 'none';
     }
-    document.getElementById('meta-exposure').textContent = exposureInfo;
+
+    // Camara: (mostrar solo el modelo, ya incluye la marca)
+    const cameraRow = document.getElementById('meta-camera-row');
+    if (photo.camera_model) {
+        document.getElementById('meta-camera').textContent = photo.camera_model;
+        cameraRow.style.display = '';
+    } else {
+        cameraRow.style.display = 'none';
+    }
+
+    // ISO: (mostrar si existe)
+    const isoRow = document.getElementById('meta-iso-row');
+    if (photo.iso) {
+        document.getElementById('meta-iso').textContent = photo.iso;
+        isoRow.style.display = '';
+    } else {
+        isoRow.style.display = 'none';
+    }
+
+    // Apertura: (mostrar si existe)
+    const apertureRow = document.getElementById('meta-aperture-row');
+    if (photo.aperture) {
+        document.getElementById('meta-aperture').textContent = `f/${photo.aperture}`;
+        apertureRow.style.display = '';
+    } else {
+        apertureRow.style.display = 'none';
+    }
+
+    // Velocidad: (mostrar si existe)
+    const shutterRow = document.getElementById('meta-shutter-row');
+    if (photo.shutter_speed) {
+        document.getElementById('meta-shutter').textContent = photo.shutter_speed;
+        shutterRow.style.display = '';
+    } else {
+        shutterRow.style.display = 'none';
+    }
 }
 
 function preloadNextImage() {

@@ -16,3 +16,4 @@ static/thumbnails/*
 .env
 venv/
 env/
+notas/

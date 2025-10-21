@@ -84,6 +84,7 @@
                     <div id="folders-panel" class="panel-section">
                         <div class="panel-header">
                             <span>📁 SUBCARPETAS (<span id="folder-count">0</span>)</span>
+                            <span style="margin-left: 20px;">📷 FOTOS (<span id="photo-count">0</span>)</span>
                             <button id="toggle-folders" class="btn-toggle">▼ Colapsar</button>
                         </div>
                         <div id="folders-grid" class="folders-grid"></div>
@@ -92,7 +93,7 @@
                     <!-- Panel de Fotos -->
                     <div id="photos-panel" class="panel-section">
                         <div class="panel-header">
-                            <span>📷 FOTOS (<span id="photo-count">0</span>)</span>
+                            <span></span>
                             <div class="photo-controls">
                                 <span id="marked-count">0 marcadas</span>
                                 <button id="mark-all" class="btn">Seleccionar todas</button>
@@ -117,12 +118,13 @@
                         <div class="carousel-badges" id="carousel-badges"></div>
                         <!-- Metadata panel -->
                         <div class="carousel-metadata" id="carousel-metadata">
-                            <div class="metadata-item"><strong>Archivo:</strong> <span id="meta-filename">-</span></div>
-                            <div class="metadata-item"><strong>Tamaño:</strong> <span id="meta-filesize">-</span></div>
-                            <div class="metadata-item"><strong>Dimensiones:</strong> <span id="meta-dimensions">-</span></div>
-                            <div class="metadata-item"><strong>Fecha:</strong> <span id="meta-date">-</span></div>
-                            <div class="metadata-item"><strong>Cámara:</strong> <span id="meta-camera">-</span></div>
-                            <div class="metadata-item"><strong>Exposición:</strong> <span id="meta-exposure">-</span></div>
+                            <div><span class="meta-label">Tamaño:</span> <span id="meta-filesize"></span></div>
+                            <div><span class="meta-label">Dimensiones:</span> <span id="meta-dimensions"></span></div>
+                            <div id="meta-date-row"><span class="meta-label">Creado el:</span> <span id="meta-date"></span></div>
+                            <div id="meta-camera-row"><span class="meta-label">Camara:</span> <span id="meta-camera"></span></div>
+                            <div id="meta-iso-row"><span class="meta-label">ISO:</span> <span id="meta-iso"></span></div>
+                            <div id="meta-aperture-row"><span class="meta-label">Apertura:</span> <span id="meta-aperture"></span></div>
+                            <div id="meta-shutter-row"><span class="meta-label">Velocidad:</span> <span id="meta-shutter"></span></div>
                         </div>
                         <!-- Loading overlay for carousel -->
                         <div id="carousel-loading-overlay" class="carousel-loading-overlay" style="display: none;">
